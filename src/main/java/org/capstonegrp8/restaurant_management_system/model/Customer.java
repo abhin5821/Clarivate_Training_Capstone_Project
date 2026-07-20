@@ -30,7 +30,7 @@ public class Customer {
     private String email;
 
     @Column(name = "password")
-    private String password;
+    private String passwod;
 
     //the relationshipfield
     @OneToMany(mappedBy = "customer")
