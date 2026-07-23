@@ -1,33 +1,19 @@
 package org.capstonegrp8.restaurant_management_system.service;
 
-import org.capstonegrp8.restaurant_management_system.model.Waiter;
-import org.capstonegrp8.restaurant_management_system.repository.WaiterRepository;
-import org.springframework.stereotype.Service;
+
+import org.capstonegrp8.restaurant_management_system.entity.Waiter;
 
 import java.util.List;
 
-@Service
-public class WaiterService {
+public interface WaiterService {
 
-    private final WaiterRepository repository;
+    Waiter addWaiter(Waiter waiter);
 
-    public WaiterService(WaiterRepository repository) {
-        this.repository = repository;
-    }
+    List<Waiter> getAllWaiters();
 
-    public List<Waiter> getAllWaiters() {
-        return repository.findAll();
-    }
+    Waiter getWaiterById(Long id);
 
-    public Waiter getWaiter(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    Waiter updateWaiter(Long id, Waiter waiter);
 
-    public Waiter saveWaiter(Waiter waiter) {
-        return repository.save(waiter);
-    }
-
-    public void deleteWaiter(Long id) {
-        repository.deleteById(id);
-    }
+    void deleteWaiter(Long id);
 }

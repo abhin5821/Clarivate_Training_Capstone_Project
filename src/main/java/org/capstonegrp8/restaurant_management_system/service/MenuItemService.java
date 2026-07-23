@@ -1,33 +1,18 @@
 package org.capstonegrp8.restaurant_management_system.service;
 
-import org.capstonegrp8.restaurant_management_system.model.MenuItem;
-import org.capstonegrp8.restaurant_management_system.repository.MenuItemRepository;
-import org.springframework.stereotype.Service;
+import org.capstonegrp8.restaurant_management_system.entity.MenuItem;
 
 import java.util.List;
 
-@Service
-public class MenuItemService {
+public interface MenuItemService {
 
-    private final MenuItemRepository repository;
+    MenuItem addMenuItem(MenuItem menuItem);
 
-    public MenuItemService(MenuItemRepository repository) {
-        this.repository = repository;
-    }
+    List<MenuItem> getAllMenuItems();
 
-    public List<MenuItem> getAllItems() {
-        return repository.findAll();
-    }
+    MenuItem getMenuItemById(Long id);
 
-    public MenuItem getItem(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    MenuItem updateMenuItem(Long id, MenuItem menuItem);
 
-    public MenuItem saveItem(MenuItem item) {
-        return repository.save(item);
-    }
-
-    public void deleteItem(Long id) {
-        repository.deleteById(id);
-    }
+    void deleteMenuItem(Long id);
 }

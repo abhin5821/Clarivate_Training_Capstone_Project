@@ -1,34 +1,18 @@
 package org.capstonegrp8.restaurant_management_system.service;
 
-
-import org.capstonegrp8.restaurant_management_system.model.Manager;
-import org.capstonegrp8.restaurant_management_system.repository.ManagerRepository;
-import org.springframework.stereotype.Service;
+import org.capstonegrp8.restaurant_management_system.entity.Manager;
 
 import java.util.List;
 
-@Service
-public class ManagerService {
+public interface ManagerService {
 
-    private final ManagerRepository repository;
+    Manager addManager(Manager manager);
 
-    public ManagerService(ManagerRepository repository) {
-        this.repository = repository;
-    }
+    List<Manager> getAllManagers();
 
-    public List<Manager> getAllManagers() {
-        return repository.findAll();
-    }
+    Manager getManagerById(Long id);
 
-    public Manager getManager(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    Manager updateManager(Long id, Manager manager);
 
-    public Manager saveManager(Manager manager) {
-        return repository.save(manager);
-    }
-
-    public void deleteManager(Long id) {
-        repository.deleteById(id);
-    }
+    void deleteManager(Long id);
 }
