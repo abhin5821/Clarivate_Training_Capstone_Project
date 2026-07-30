@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
+    boolean existsByRestaurantOrder_OrderId(Long orderId);
 }

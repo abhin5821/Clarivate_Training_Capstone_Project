@@ -32,7 +32,7 @@ public class MenuItem {
     @Positive(message = "Price must be positive")
     private Double price;
 
-    private boolean available = true;
+    private Boolean available = true;
 
     @ManyToOne
     @JoinColumn(name = "manager_id")
