@@ -27,7 +27,7 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime reservationDate;
 
-    private Integer numberOfGuests;
+    private Integer partySize;
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
