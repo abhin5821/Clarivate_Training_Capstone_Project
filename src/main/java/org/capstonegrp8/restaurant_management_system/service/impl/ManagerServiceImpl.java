@@ -7,18 +7,26 @@ import org.capstonegrp8.restaurant_management_system.service.ManagerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
 
     private final ManagerRepository managerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ManagerServiceImpl(ManagerRepository managerRepository) {
+    public ManagerServiceImpl(ManagerRepository managerRepository,
+                              PasswordEncoder passwordEncoder) {
         this.managerRepository = managerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Manager addManager(Manager manager) {
+        manager.setPassword(
+                passwordEncoder.encode(manager.getPassword())
+        );
         return managerRepository.save(manager);
     }
 

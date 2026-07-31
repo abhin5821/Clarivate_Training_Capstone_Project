@@ -4,6 +4,7 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 import org.capstonegrp8.restaurant_management_system.entity.Waiter;
 import org.capstonegrp8.restaurant_management_system.repository.WaiterRepository;
 import org.capstonegrp8.restaurant_management_system.service.WaiterService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,13 +13,18 @@ import java.util.List;
 public class WaiterServiceImpl implements WaiterService {
 
     private final WaiterRepository waiterRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public WaiterServiceImpl(WaiterRepository waiterRepository) {
+    public WaiterServiceImpl(WaiterRepository waiterRepository, PasswordEncoder passwordEncoder) {
         this.waiterRepository = waiterRepository;
+        this.passwordEncoder=passwordEncoder;
     }
 
     @Override
     public Waiter addWaiter(Waiter waiter) {
+        waiter.setPassword(
+                passwordEncoder.encode(waiter.getPassword())
+        );
         return waiterRepository.save(waiter);
     }
 

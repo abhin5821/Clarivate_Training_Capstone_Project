@@ -41,4 +41,6 @@ public class Manager {
     @OneToMany(mappedBy = "manager")
     @JsonIgnore
     private List<MenuItem> menuItems = new ArrayList<>();
+
+    private String password;
 }

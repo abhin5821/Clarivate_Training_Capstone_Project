@@ -47,4 +47,6 @@ public class Waiter {
     @OneToMany(mappedBy = "waiter", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<RestaurantOrder> orders = new ArrayList<>();
+
+    private String password;
 }
