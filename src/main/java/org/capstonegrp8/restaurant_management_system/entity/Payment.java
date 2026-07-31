@@ -32,6 +32,6 @@ public class Payment {
 
     @OneToOne
     @JoinColumn(name = "order_id")
-    @JsonIgnore
+//    @JsonIgnore
     private RestaurantOrder restaurantOrder;
 }

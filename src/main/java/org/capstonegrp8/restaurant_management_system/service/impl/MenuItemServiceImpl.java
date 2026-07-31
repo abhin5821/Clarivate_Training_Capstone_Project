@@ -46,7 +46,7 @@ public class MenuItemServiceImpl implements MenuItemService {
         existing.setName(menuItem.getName());
         existing.setCategory(menuItem.getCategory());
         existing.setPrice(menuItem.getPrice());
-        existing.setAvailable(menuItem.isAvailable());
+        existing.setAvailable(menuItem.getAvailable());
         existing.setManager(menuItem.getManager());
 
         return menuItemRepository.save(existing);

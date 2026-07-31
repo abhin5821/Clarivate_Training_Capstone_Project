@@ -22,15 +22,14 @@ public class OrderItem {
     private Integer quantity;
 
     @Positive
-    private Double price;
+//    private Double price;
+    private Double subTotal;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    @JsonIgnore
     private RestaurantOrder restaurantOrder;
 
     @ManyToOne
     @JoinColumn(name = "menu_item_id")
-//    @JsonIgnore
     private MenuItem menuItem;
 }

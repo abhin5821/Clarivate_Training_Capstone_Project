@@ -23,6 +23,7 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.addCustomer(customer), HttpStatus.CREATED);
     }
 
+
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
         return ResponseEntity.ok(customerService.getAllCustomers());
