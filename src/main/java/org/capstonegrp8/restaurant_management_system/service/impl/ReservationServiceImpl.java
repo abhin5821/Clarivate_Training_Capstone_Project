@@ -13,6 +13,7 @@ import org.capstonegrp8.restaurant_management_system.repository.RestaurantTableR
 import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,28 +40,52 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional
     public Reservation createReservation(Reservation reservation) {
 
         validateReservation(reservation);
 
-        RestaurantTable table = tableRepository.findById(
-                        reservation.getRestaurantTable().getTableId())
-                .orElseThrow(() -> new RuntimeException("Table not found"));
+        // No table chosen by client — system allocates automatically
+        reservation.setRestaurantTable(null);
+        reservation.setStatus(ReservationStatus.PENDING);
+        Reservation saved = reservationRepository.save(reservation);
 
-        if (table.getStatus() != TableStatus.AVAILABLE) {
-            throw new RuntimeException("Table is not available");
+        tryAllocate(saved);
+        return saved;
+    }
+
+    /**
+     * Finds the best available table for the given reservation (min seat-waste).
+     * If a table is found, marks it RESERVED and the reservation CONFIRMED.
+     * If no table fits, reservation stays PENDING.
+     */
+    private void tryAllocate(Reservation reservation) {
+        List<RestaurantTable> candidates = tableRepository
+                .findByStatusAndCapacityGreaterThanEqualOrderByCapacityAsc(
+                        TableStatus.AVAILABLE, reservation.getPartySize());
+
+        if (candidates.isEmpty()) {
+            // No table available right now — reservation waits in PENDING queue
+            return;
         }
 
-        table.setStatus(TableStatus.RESERVED);
-        tableRepository.save(table);
+        // First result = smallest capacity that still fits = minimum seat-waste
+        RestaurantTable best = candidates.get(0);
+        best.setStatus(TableStatus.RESERVED);
+        tableRepository.save(best);
 
-        reservation.setRestaurantTable(table);
+        reservation.setRestaurantTable(best);
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservationRepository.save(reservation);
+    }
 
-        if (reservation.getStatus() == null) {
-            reservation.setStatus(ReservationStatus.CONFIRMED);
-        }
-
-        return reservationRepository.save(reservation);
+    /**
+     * After a table becomes free, attempt to allocate it to the oldest PENDING reservation.
+     */
+    private void tryAllocateNext() {
+        reservationRepository
+                .findFirstByStatusOrderByReservationDateAsc(ReservationStatus.PENDING)
+                .ifPresent(this::tryAllocate);
     }
 
     private void validateReservation(Reservation reservation) {
@@ -140,14 +165,23 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional
     public void cancelReservation(Long id) {
 
         Reservation reservation = getReservationById(id);
 
+        // Free the table if one was assigned (PENDING reservations have none)
         RestaurantTable table = reservation.getRestaurantTable();
-        table.setStatus(TableStatus.AVAILABLE);
-        tableRepository.save(table);
+        if (table != null) {
+            table.setStatus(TableStatus.AVAILABLE);
+            tableRepository.save(table);
+        }
 
-        reservationRepository.delete(reservation);
+        // Soft-cancel: keep the record for audit history, just mark it cancelled
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+
+        // Give the freed table (if any) to the next PENDING reservation
+        tryAllocateNext();
     }
 }

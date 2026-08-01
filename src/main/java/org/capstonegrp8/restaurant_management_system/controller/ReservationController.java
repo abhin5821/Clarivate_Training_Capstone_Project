@@ -42,6 +42,6 @@ public class ReservationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> cancelReservation(@PathVariable Long id) {
         reservationService.cancelReservation(id);
-        return ResponseEntity.ok("Reservation cancelled successfully.");
+        return ResponseEntity.ok("Reservation cancelled and record retained for audit.");
     }
 }
