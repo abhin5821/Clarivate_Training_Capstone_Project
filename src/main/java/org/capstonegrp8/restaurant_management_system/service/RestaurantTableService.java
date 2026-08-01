@@ -15,5 +15,8 @@ public interface RestaurantTableService {
 
     RestaurantTable updateTable(Long id, RestaurantTable table);
 
+    // Waiter frees a table (e.g. after payment) — sets it AVAILABLE and triggers re-allocation
+    RestaurantTable releaseTable(Long id);
+
     void deleteTable(Long id);
 }

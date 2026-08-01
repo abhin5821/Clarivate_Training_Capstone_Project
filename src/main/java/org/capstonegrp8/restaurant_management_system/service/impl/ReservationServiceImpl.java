@@ -80,12 +80,26 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     /**
-     * After a table becomes free, attempt to allocate it to the oldest PENDING reservation.
+
+     * After a table becomes free, allocate it to the best waiting reservation:
+     * the largest party that still fits (minimum seat-waste), earliest first on ties (FCFS).
      */
-    private void tryAllocateNext() {
+    private void tryAllocateFreedTable(RestaurantTable freedTable) {
+        if (freedTable == null || freedTable.getStatus() != TableStatus.AVAILABLE) {
+            return;
+        }
+
         reservationRepository
-                .findFirstByStatusOrderByReservationDateAsc(ReservationStatus.PENDING)
-                .ifPresent(this::tryAllocate);
+                .findFirstByStatusAndPartySizeLessThanEqualOrderByPartySizeDescReservationDateAsc(
+                        ReservationStatus.PENDING, freedTable.getCapacity())
+                .ifPresent(candidate -> {
+                    freedTable.setStatus(TableStatus.RESERVED);
+                    tableRepository.save(freedTable);
+
+                    candidate.setRestaurantTable(freedTable);
+                    candidate.setStatus(ReservationStatus.CONFIRMED);
+                    reservationRepository.save(candidate);
+                });
     }
 
     private void validateReservation(Reservation reservation) {
@@ -153,21 +167,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Reservation updateReservation(Long id, Reservation reservation) {
-
-        Reservation existing = getReservationById(id);
-
-        existing.setReservationDate(reservation.getReservationDate());
-        existing.setPartySize(reservation.getPartySize());
-        existing.setStatus(reservation.getStatus());
-
-        return reservationRepository.save(existing);
-    }
-
-    @Override
     @Transactional
     public void cancelReservation(Long id) {
-
         Reservation reservation = getReservationById(id);
 
         // Free the table if one was assigned (PENDING reservations have none)
@@ -181,7 +182,15 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
 
-        // Give the freed table (if any) to the next PENDING reservation
-        tryAllocateNext();
+        // Give the freed table (if any) to the best-fit waiting reservation
+        tryAllocateFreedTable(table);
+    }
+
+    @Override
+    @Transactional
+    public void reallocateFreedTable(Long tableId) {
+        RestaurantTable table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new RuntimeException("Table not found"));
+        tryAllocateFreedTable(table);
     }
 }

@@ -14,7 +14,8 @@ public interface ReservationService {
 
     Reservation getReservationById(Long id);
 
-    Reservation updateReservation(Long id, Reservation reservation);
-
     void cancelReservation(Long id);
+
+    // Called when a waiter frees a table — re-allocates it to the best-fit waiting reservation
+    void reallocateFreedTable(Long tableId);
 }

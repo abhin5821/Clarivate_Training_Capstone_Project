@@ -4,8 +4,10 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantTable;
 import org.capstonegrp8.restaurant_management_system.enums.TableStatus;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantTableRepository;
+import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.capstonegrp8.restaurant_management_system.service.RestaurantTableService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,9 +15,12 @@ import java.util.List;
 public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     private final RestaurantTableRepository tableRepository;
+    private final ReservationService reservationService;
 
-    public RestaurantTableServiceImpl(RestaurantTableRepository tableRepository) {
+    public RestaurantTableServiceImpl(RestaurantTableRepository tableRepository,
+                                      ReservationService reservationService) {
         this.tableRepository = tableRepository;
+        this.reservationService = reservationService;
     }
 
     @Override
@@ -54,6 +59,21 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         existing.setWaiter(table.getWaiter());
 
         return tableRepository.save(existing);
+    }
+
+    @Override
+    @Transactional
+    public RestaurantTable releaseTable(Long id) {
+
+        RestaurantTable table = getTableById(id);
+
+        table.setStatus(TableStatus.AVAILABLE);
+        RestaurantTable saved = tableRepository.save(table);
+
+        // Table just freed — hand it to the best-fit waiting reservation (min-waste + FCFS)
+        reservationService.reallocateFreedTable(saved.getTableId());
+
+        return getTableById(id);
     }
 
     @Override

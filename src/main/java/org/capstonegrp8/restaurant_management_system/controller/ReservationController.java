@@ -33,12 +33,6 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservationById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Reservation> updateReservation(@PathVariable Long id,
-                                                         @RequestBody Reservation reservation) {
-        return ResponseEntity.ok(reservationService.updateReservation(id, reservation));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> cancelReservation(@PathVariable Long id) {
         reservationService.cancelReservation(id);
