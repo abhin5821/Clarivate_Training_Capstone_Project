@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.MenuItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class MenuItemController {
     }
 
     @PostMapping
-    public ResponseEntity<MenuItem> addMenuItem(@RequestBody MenuItem menuItem) {
+    public ResponseEntity<MenuItem> addMenuItem(@Valid @RequestBody MenuItem menuItem) {
         return new ResponseEntity<>(menuItemService.addMenuItem(menuItem), HttpStatus.CREATED);
     }
 
@@ -35,7 +36,7 @@ public class MenuItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id,
-                                                   @RequestBody MenuItem menuItem) {
+                                                   @Valid @RequestBody MenuItem menuItem) {
         return ResponseEntity.ok(menuItemService.updateMenuItem(id, menuItem));
     }
 

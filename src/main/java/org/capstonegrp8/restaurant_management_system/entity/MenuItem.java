@@ -3,6 +3,7 @@ package org.capstonegrp8.restaurant_management_system.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.capstonegrp8.restaurant_management_system.enums.MenuCategory;
@@ -26,9 +27,11 @@ public class MenuItem {
     @NotBlank(message = "Item name is required")
     private String name;
 
+    @NotNull(message = "Category is required")
     @Enumerated(EnumType.STRING)
     private MenuCategory category;
 
+    @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
     private Double price;
 

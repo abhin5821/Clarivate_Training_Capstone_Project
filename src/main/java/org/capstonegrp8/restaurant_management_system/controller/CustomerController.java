@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.CustomerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> addCustomer(@Valid @RequestBody Customer customer) {
         return new ResponseEntity<>(customerService.addCustomer(customer), HttpStatus.CREATED);
     }
 
@@ -36,7 +37,7 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Customer> updateCustomer(@PathVariable Long id,
-                                                   @RequestBody Customer customer) {
+                                                   @Valid @RequestBody Customer customer) {
         return ResponseEntity.ok(customerService.updateCustomer(id, customer));
     }
 

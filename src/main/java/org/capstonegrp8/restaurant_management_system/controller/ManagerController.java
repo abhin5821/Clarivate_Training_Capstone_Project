@@ -6,6 +6,7 @@ import org.capstonegrp8.restaurant_management_system.service.ManagerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class ManagerController {
     }
 
     @PostMapping
-    public ResponseEntity<Manager> addManager(@RequestBody Manager manager) {
+    public ResponseEntity<Manager> addManager(@Valid @RequestBody Manager manager) {
         return new ResponseEntity<>(managerService.addManager(manager), HttpStatus.CREATED);
     }
 
@@ -36,7 +37,7 @@ public class ManagerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Manager> updateManager(@PathVariable Long id,
-                                                 @RequestBody Manager manager) {
+                                                 @Valid @RequestBody Manager manager) {
         return ResponseEntity.ok(managerService.updateManager(id, manager));
     }
 

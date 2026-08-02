@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.WaiterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class WaiterController {
     }
 
     @PostMapping
-    public ResponseEntity<Waiter> addWaiter(@RequestBody Waiter waiter) {
+    public ResponseEntity<Waiter> addWaiter(@Valid @RequestBody Waiter waiter) {
         return new ResponseEntity<>(waiterService.addWaiter(waiter), HttpStatus.CREATED);
     }
 
@@ -35,7 +36,7 @@ public class WaiterController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Waiter> updateWaiter(@PathVariable Long id,
-                                               @RequestBody Waiter waiter) {
+                                               @Valid @RequestBody Waiter waiter) {
         return ResponseEntity.ok(waiterService.updateWaiter(id, waiter));
     }
 

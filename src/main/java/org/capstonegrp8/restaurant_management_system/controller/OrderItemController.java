@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.OrderItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class OrderItemController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderItem> create(@RequestBody OrderItem orderItem) {
+    public ResponseEntity<OrderItem> create(@Valid @RequestBody OrderItem orderItem) {
         return new ResponseEntity<>(
                 orderItemService.createOrderItem(orderItem),
                 HttpStatus.CREATED);
@@ -37,7 +38,7 @@ public class OrderItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderItem> update(@PathVariable Long id,
-                                            @RequestBody OrderItem orderItem) {
+                                            @Valid @RequestBody OrderItem orderItem) {
 
         return ResponseEntity.ok(
                 orderItemService.updateOrderItem(id, orderItem));

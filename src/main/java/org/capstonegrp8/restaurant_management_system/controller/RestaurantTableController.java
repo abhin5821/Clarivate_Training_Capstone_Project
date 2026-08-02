@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.RestaurantTableServ
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class RestaurantTableController {
     }
 
     @PostMapping
-    public ResponseEntity<RestaurantTable> addTable(@RequestBody RestaurantTable table) {
+    public ResponseEntity<RestaurantTable> addTable(@Valid @RequestBody RestaurantTable table) {
         return new ResponseEntity<>(tableService.addTable(table), HttpStatus.CREATED);
     }
 
@@ -35,7 +36,7 @@ public class RestaurantTableController {
 
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantTable> updateTable(@PathVariable Long id,
-                                                       @RequestBody RestaurantTable table) {
+                                                       @Valid @RequestBody RestaurantTable table) {
         return ResponseEntity.ok(tableService.updateTable(id, table));
     }
 

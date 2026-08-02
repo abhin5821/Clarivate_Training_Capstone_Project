@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
+    public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) {
         return new ResponseEntity<>(reservationService.createReservation(reservation), HttpStatus.CREATED);
     }
 

@@ -4,6 +4,7 @@ package org.capstonegrp8.restaurant_management_system.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.capstonegrp8.restaurant_management_system.enums.OrderStatus;
 
@@ -31,11 +32,13 @@ public class RestaurantOrder {
 
     private Double totalAmount;
 
+    @NotNull(message = "Reservation is required")
     @ManyToOne
     @JoinColumn(name = "reservation_id")
 //    @JsonIgnore
     private Reservation reservation;
 
+    @NotNull(message = "Waiter is required")
     @ManyToOne
     @JoinColumn(name = "waiter_id")
 //    @JsonIgnore

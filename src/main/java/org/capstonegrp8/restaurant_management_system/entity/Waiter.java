@@ -48,5 +48,6 @@ public class Waiter {
     @JsonIgnore
     private List<RestaurantOrder> orders = new ArrayList<>();
 
+    @NotBlank(message = "Password is required")
     private String password;
 }

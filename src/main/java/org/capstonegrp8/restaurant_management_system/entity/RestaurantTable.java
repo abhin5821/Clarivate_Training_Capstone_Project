@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.capstonegrp8.restaurant_management_system.enums.TableStatus;
 
@@ -23,9 +25,12 @@ public class RestaurantTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tableId;
 
+    @NotNull(message = "Table number is required")
     @Column(nullable = false, unique = true)
     private Integer tableNumber;
 
+    @NotNull(message = "Capacity is required")
+    @Min(value = 1, message = "Capacity must be at least 1")
     @Column(nullable = false)
     private Integer capacity;
 

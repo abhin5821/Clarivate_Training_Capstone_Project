@@ -38,5 +38,6 @@ public class Customer {
     @JsonIgnore
     private List<Reservation> reservations = new ArrayList<>();
 
+    @NotBlank(message = "Password is required")
     private String password;
 }

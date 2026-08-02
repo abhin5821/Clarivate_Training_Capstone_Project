@@ -42,5 +42,6 @@ public class Manager {
     @JsonIgnore
     private List<MenuItem> menuItems = new ArrayList<>();
 
+    @NotBlank(message = "Password is required")
     private String password;
 }
