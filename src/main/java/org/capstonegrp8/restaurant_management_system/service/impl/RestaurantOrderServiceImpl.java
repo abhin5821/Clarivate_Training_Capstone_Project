@@ -1,9 +1,10 @@
-﻿package org.capstonegrp8.restaurant_management_system.service.impl;
+package org.capstonegrp8.restaurant_management_system.service.impl;
 
 import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantOrder;
 import org.capstonegrp8.restaurant_management_system.entity.Waiter;
 import org.capstonegrp8.restaurant_management_system.enums.OrderStatus;
+import org.capstonegrp8.restaurant_management_system.enums.ReservationStatus;
 import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
 import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.ReservationRepository;
@@ -41,6 +42,13 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
         Reservation reservation = reservationRepository.findById(order.getReservation().getReservationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + order.getReservation().getReservationId()));
+
+        // Orders can only be placed once the reservation is confirmed and a table is allocated
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED
+                || reservation.getRestaurantTable() == null) {
+            throw new BadRequestException(
+                    "Order cannot be placed until the reservation is confirmed and a table is allocated");
+        }
 
         Waiter waiter = waiterRepository.findById(order.getWaiter().getWaiterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Waiter not found with id: " + order.getWaiter().getWaiterId()));
