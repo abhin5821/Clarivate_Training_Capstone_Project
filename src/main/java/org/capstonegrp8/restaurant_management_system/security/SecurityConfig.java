@@ -2,6 +2,7 @@ package org.capstonegrp8.restaurant_management_system.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,11 +48,19 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**")
-                        .permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
-                        .requestMatchers("/managers/**")
-                        .hasRole("MANAGER")
+                        // Registration
+                        .requestMatchers(HttpMethod.POST, "/customers").permitAll()
+
+                        // Manager only
+                        .requestMatchers("/managers/**").hasRole("MANAGER")
+
+                        .requestMatchers("/menu-items/**").hasRole("MANAGER")
+
+                        // Waiter + Manager
+                        .requestMatchers("/tables/**")
+                        .hasAnyRole("WAITER", "MANAGER")
 
                         .requestMatchers("/waiters/**")
                         .hasAnyRole("WAITER", "MANAGER")
@@ -59,11 +68,20 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**")
                         .hasAnyRole("WAITER", "MANAGER")
 
-                        .requestMatchers("/reservations/**")
-                        .hasAnyRole("CUSTOMER", "MANAGER")
+                        .requestMatchers("/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
 
+                        // Payments
                         .requestMatchers("/payments/**")
-                        .authenticated()
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        // Customers
+                        .requestMatchers("/customers/**")
+                        .hasRole("MANAGER")
+
+                        // Reservations
+                        .requestMatchers("/reservations/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
 
                         .anyRequest()
                         .authenticated()
