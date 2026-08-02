@@ -56,7 +56,17 @@ public class SecurityConfig {
                         // Manager only
                         .requestMatchers("/managers/**").hasRole("MANAGER")
 
-                        .requestMatchers("/menu-items/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/menu-items/**")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.PUT, "/menu-items/**")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/menu-items/**")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers("/customers/**")
+                        .hasRole("MANAGER")
 
                         // Waiter + Manager
                         .requestMatchers("/tables/**")
@@ -68,19 +78,32 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**")
                         .hasAnyRole("WAITER", "MANAGER")
 
-                        .requestMatchers("/order-items/**")
+
+                        .requestMatchers(HttpMethod.POST, "/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.PUT, "/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/order-items/**")
                         .hasAnyRole("WAITER", "MANAGER")
 
                         // Payments
                         .requestMatchers("/payments/**")
                         .hasAnyRole("WAITER", "MANAGER")
 
-                        // Customers
-                        .requestMatchers("/customers/**")
-                        .hasRole("MANAGER")
 
                         // Reservations
                         .requestMatchers("/reservations/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
+
+
+
+                        //Customers
+                        .requestMatchers(HttpMethod.GET, "/order-items/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/menu-items/**")
                         .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
 
                         .anyRequest()

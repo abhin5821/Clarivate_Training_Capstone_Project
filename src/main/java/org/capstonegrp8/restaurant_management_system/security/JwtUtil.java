@@ -13,7 +13,7 @@ import java.util.Date;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private static  String SECRET ;
+    private String SECRET ;
 
     public String generateToken(String email) {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
