@@ -2,6 +2,8 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 
 import org.capstonegrp8.restaurant_management_system.entity.MenuItem;
+import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
+import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.MenuItemRepository;
 import org.capstonegrp8.restaurant_management_system.service.MenuItemService;
 import org.springframework.stereotype.Service;
@@ -19,11 +21,9 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public MenuItem addMenuItem(MenuItem menuItem) {
-
-        if(menuItem.getPrice() <= 0){
-            throw new RuntimeException("Price should be greater than zero.");
+        if (menuItem.getPrice() == null || menuItem.getPrice() <= 0) {
+            throw new BadRequestException("Price must be greater than zero");
         }
-
         return menuItemRepository.save(menuItem);
     }
 
@@ -35,28 +35,22 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Override
     public MenuItem getMenuItemById(Long id) {
         return menuItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Menu Item not found with id : " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + id));
     }
 
     @Override
     public MenuItem updateMenuItem(Long id, MenuItem menuItem) {
-
         MenuItem existing = getMenuItemById(id);
-
         existing.setName(menuItem.getName());
         existing.setCategory(menuItem.getCategory());
         existing.setPrice(menuItem.getPrice());
         existing.setAvailable(menuItem.getAvailable());
         existing.setManager(menuItem.getManager());
-
         return menuItemRepository.save(existing);
     }
 
     @Override
     public void deleteMenuItem(Long id) {
-
-        MenuItem menuItem = getMenuItemById(id);
-
-        menuItemRepository.delete(menuItem);
+        menuItemRepository.delete(getMenuItemById(id));
     }
 }

@@ -7,6 +7,9 @@ import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantTable;
 import org.capstonegrp8.restaurant_management_system.enums.ReservationStatus;
 import org.capstonegrp8.restaurant_management_system.enums.TableStatus;
+import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
+import org.capstonegrp8.restaurant_management_system.exception.ConflictException;
+import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.CustomerRepository;
 import org.capstonegrp8.restaurant_management_system.repository.ReservationRepository;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantTableRepository;
@@ -105,34 +108,32 @@ public class ReservationServiceImpl implements ReservationService {
     private void validateReservation(Reservation reservation) {
 
         // validate customer details
-        if (reservation.getCustomer() == null) {
-            throw new RuntimeException("Customer details are required");
-        } else if (reservation.getCustomer().getCustomerId() == null) {
-            throw new RuntimeException("Customer details are required");
+        if (reservation.getCustomer() == null || reservation.getCustomer().getCustomerId() == null) {
+            throw new BadRequestException("Customer reference is required");
         }
         Customer customer = customerRepository.findById(reservation.getCustomer().getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + reservation.getCustomer().getCustomerId()));
         reservation.setCustomer(customer);
 
         // validate party size
         Integer partySize = reservation.getPartySize();
         if (partySize == null || partySize <= 0) {
-            throw new RuntimeException("Party size must be greater than 0");
+            throw new BadRequestException("Party size must be greater than 0");
         }
 
         // validate reservation time
         LocalDateTime reservationDate = reservation.getReservationDate();
         if (reservationDate == null) {
-            throw new RuntimeException("Reservation time is required");
+            throw new BadRequestException("Reservation time is required");
         }
         if (reservationDate.isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Reservation time cannot be in the past");
+            throw new BadRequestException("Reservation time cannot be in the past");
         }
 
         // validate operating hours
         int hour = reservationDate.getHour();
         if (hour < openingHour || hour >= closingHour) {
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "Reservation time must be within operating hours ("
                             + openingHour + ":00 - " + closingHour + ":00)");
         }
@@ -140,18 +141,18 @@ public class ReservationServiceImpl implements ReservationService {
         // check maximum supported capacity
         Integer maxCapacity = tableRepository.findMaxCapacity();
         if (maxCapacity == null) {
-            throw new RuntimeException("No tables are configured");
+            throw new BadRequestException("No tables are configured in the system");
         }
         if (partySize > maxCapacity) {
-            throw new RuntimeException(
-                    "Party size exceeds maximum supported capacity of " + maxCapacity);
+            throw new BadRequestException(
+                    "Party size " + partySize + " exceeds maximum supported capacity of " + maxCapacity);
         }
 
         // prevent duplicate submission
         boolean duplicate = reservationRepository
                 .existsByCustomer_CustomerIdAndReservationDate(customer.getCustomerId(), reservationDate);
         if (duplicate) {
-            throw new RuntimeException("A reservation already exists for this customer at the same time");
+            throw new ConflictException("A reservation already exists for this customer at the same date and time");
         }
     }
 
@@ -163,7 +164,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Reservation getReservationById(Long id) {
         return reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
     }
 
     @Override
@@ -171,18 +172,15 @@ public class ReservationServiceImpl implements ReservationService {
     public void cancelReservation(Long id) {
         Reservation reservation = getReservationById(id);
 
-        // Free the table if one was assigned (PENDING reservations have none)
         RestaurantTable table = reservation.getRestaurantTable();
         if (table != null) {
             table.setStatus(TableStatus.AVAILABLE);
             tableRepository.save(table);
         }
 
-        // Soft-cancel: keep the record for audit history, just mark it cancelled
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
 
-        // Give the freed table (if any) to the best-fit waiting reservation
         tryAllocateFreedTable(table);
     }
 
@@ -190,7 +188,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public void reallocateFreedTable(Long tableId) {
         RestaurantTable table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new RuntimeException("Table not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found with id: " + tableId));
         tryAllocateFreedTable(table);
     }
 }

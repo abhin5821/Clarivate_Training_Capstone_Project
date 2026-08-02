@@ -2,6 +2,7 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 
 import org.capstonegrp8.restaurant_management_system.entity.Waiter;
+import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.WaiterRepository;
 import org.capstonegrp8.restaurant_management_system.service.WaiterService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,14 +18,12 @@ public class WaiterServiceImpl implements WaiterService {
 
     public WaiterServiceImpl(WaiterRepository waiterRepository, PasswordEncoder passwordEncoder) {
         this.waiterRepository = waiterRepository;
-        this.passwordEncoder=passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Waiter addWaiter(Waiter waiter) {
-        waiter.setPassword(
-                passwordEncoder.encode(waiter.getPassword())
-        );
+        waiter.setPassword(passwordEncoder.encode(waiter.getPassword()));
         return waiterRepository.save(waiter);
     }
 
@@ -36,27 +35,21 @@ public class WaiterServiceImpl implements WaiterService {
     @Override
     public Waiter getWaiterById(Long id) {
         return waiterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Waiter not found with id : " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Waiter not found with id: " + id));
     }
 
     @Override
     public Waiter updateWaiter(Long id, Waiter waiter) {
-
-        Waiter existingWaiter = getWaiterById(id);
-
-        existingWaiter.setName(waiter.getName());
-        existingWaiter.setPhone(waiter.getPhone());
-        existingWaiter.setEmail(waiter.getEmail());
-        existingWaiter.setManager(waiter.getManager());
-
-        return waiterRepository.save(existingWaiter);
+        Waiter existing = getWaiterById(id);
+        existing.setName(waiter.getName());
+        existing.setPhone(waiter.getPhone());
+        existing.setEmail(waiter.getEmail());
+        existing.setManager(waiter.getManager());
+        return waiterRepository.save(existing);
     }
 
     @Override
     public void deleteWaiter(Long id) {
-
-        Waiter waiter = getWaiterById(id);
-
-        waiterRepository.delete(waiter);
+        waiterRepository.delete(getWaiterById(id));
     }
 }

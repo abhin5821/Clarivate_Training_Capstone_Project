@@ -2,6 +2,7 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 
 import org.capstonegrp8.restaurant_management_system.entity.Customer;
+import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.CustomerRepository;
 import org.capstonegrp8.restaurant_management_system.service.CustomerService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,14 +18,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     public CustomerServiceImpl(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
-        this.passwordEncoder=passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Customer addCustomer(Customer customer) {
-        customer.setPassword(
-                passwordEncoder.encode(customer.getPassword())
-        );
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         return customerRepository.save(customer);
     }
 
@@ -36,26 +35,20 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer getCustomerById(Long id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
     }
 
     @Override
     public Customer updateCustomer(Long id, Customer customer) {
-
-        Customer existingCustomer = getCustomerById(id);
-
-        existingCustomer.setName(customer.getName());
-        existingCustomer.setEmail(customer.getEmail());
-        existingCustomer.setPhone(customer.getPhone());
-
-        return customerRepository.save(existingCustomer);
+        Customer existing = getCustomerById(id);
+        existing.setName(customer.getName());
+        existing.setEmail(customer.getEmail());
+        existing.setPhone(customer.getPhone());
+        return customerRepository.save(existing);
     }
 
     @Override
     public void deleteCustomer(Long id) {
-
-        Customer customer = getCustomerById(id);
-
-        customerRepository.delete(customer);
+        customerRepository.delete(getCustomerById(id));
     }
 }

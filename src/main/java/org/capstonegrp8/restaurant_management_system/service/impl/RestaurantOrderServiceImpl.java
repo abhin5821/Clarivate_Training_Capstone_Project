@@ -1,9 +1,11 @@
-package org.capstonegrp8.restaurant_management_system.service.impl;
+﻿package org.capstonegrp8.restaurant_management_system.service.impl;
 
 import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantOrder;
 import org.capstonegrp8.restaurant_management_system.entity.Waiter;
 import org.capstonegrp8.restaurant_management_system.enums.OrderStatus;
+import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
+import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.ReservationRepository;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantOrderRepository;
 import org.capstonegrp8.restaurant_management_system.repository.WaiterRepository;
@@ -30,18 +32,21 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Override
     public RestaurantOrder createOrder(RestaurantOrder order) {
+        if (order.getReservation() == null || order.getReservation().getReservationId() == null) {
+            throw new BadRequestException("Reservation reference is required");
+        }
+        if (order.getWaiter() == null || order.getWaiter().getWaiterId() == null) {
+            throw new BadRequestException("Waiter reference is required");
+        }
 
-        Reservation reservation = reservationRepository.findById(
-                        order.getReservation().getReservationId())
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+        Reservation reservation = reservationRepository.findById(order.getReservation().getReservationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + order.getReservation().getReservationId()));
 
-        Waiter waiter = waiterRepository.findById(
-                        order.getWaiter().getWaiterId())
-                .orElseThrow(() -> new RuntimeException("Waiter not found"));
+        Waiter waiter = waiterRepository.findById(order.getWaiter().getWaiterId())
+                .orElseThrow(() -> new ResourceNotFoundException("Waiter not found with id: " + order.getWaiter().getWaiterId()));
 
         order.setReservation(reservation);
         order.setWaiter(waiter);
-
         order.setOrderTime(LocalDateTime.now());
 
         if (order.getStatus() == null) {
@@ -59,25 +64,19 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     @Override
     public RestaurantOrder getOrderById(Long id) {
         return orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
     }
 
     @Override
     public RestaurantOrder updateOrder(Long id, RestaurantOrder order) {
-
         RestaurantOrder existing = getOrderById(id);
-
         existing.setStatus(order.getStatus());
         existing.setTotalAmount(order.getTotalAmount());
-
         return orderRepository.save(existing);
     }
 
     @Override
     public void deleteOrder(Long id) {
-
-        RestaurantOrder order = getOrderById(id);
-
-        orderRepository.delete(order);
+        orderRepository.delete(getOrderById(id));
     }
 }
