@@ -37,30 +37,34 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        String email = jwtUtil.extractUsername(token);
+        try {
+            String email = jwtUtil.extractUsername(token);
 
-        if (email != null
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (email != null
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails =
-                    customUserDetailsService.loadUserByUsername(email);
+                UserDetails userDetails =
+                        customUserDetailsService.loadUserByUsername(email);
 
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
 
-            authToken.setDetails(
-                    new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
-            );
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
 
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authToken);
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authToken);
+            }
+        } catch (Exception e) {
+            filterChain.doFilter(request, response);
+            return;
         }
-
         filterChain.doFilter(request, response);
     }
 }

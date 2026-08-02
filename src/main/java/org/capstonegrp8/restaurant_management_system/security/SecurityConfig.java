@@ -2,6 +2,7 @@ package org.capstonegrp8.restaurant_management_system.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,11 +48,29 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**")
-                        .permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
-                        .requestMatchers("/managers/**")
+                        // Registration
+                        .requestMatchers(HttpMethod.POST, "/customers").permitAll()
+
+                        // Manager only
+                        .requestMatchers("/managers/**").hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.POST, "/menu-items/**")
                         .hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.PUT, "/menu-items/**")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/menu-items/**")
+                        .hasRole("MANAGER")
+
+                        .requestMatchers("/customers/**")
+                        .hasRole("MANAGER")
+
+                        // Waiter + Manager
+                        .requestMatchers("/tables/**")
+                        .hasAnyRole("WAITER", "MANAGER")
 
                         .requestMatchers("/waiters/**")
                         .hasAnyRole("WAITER", "MANAGER")
@@ -59,11 +78,33 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**")
                         .hasAnyRole("WAITER", "MANAGER")
 
-                        .requestMatchers("/reservations/**")
-                        .hasAnyRole("CUSTOMER", "MANAGER")
 
+                        .requestMatchers(HttpMethod.POST, "/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.PUT, "/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/order-items/**")
+                        .hasAnyRole("WAITER", "MANAGER")
+
+                        // Payments
                         .requestMatchers("/payments/**")
-                        .authenticated()
+                        .hasAnyRole("WAITER", "MANAGER")
+
+
+                        // Reservations
+                        .requestMatchers("/reservations/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
+
+
+
+                        //Customers
+                        .requestMatchers(HttpMethod.GET, "/order-items/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/menu-items/**")
+                        .hasAnyRole("CUSTOMER", "WAITER", "MANAGER")
 
                         .anyRequest()
                         .authenticated()
