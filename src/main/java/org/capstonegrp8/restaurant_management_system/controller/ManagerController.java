@@ -5,6 +5,7 @@ import org.capstonegrp8.restaurant_management_system.entity.Manager;
 import org.capstonegrp8.restaurant_management_system.service.ManagerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -21,27 +22,32 @@ public class ManagerController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Manager> addManager(@Valid @RequestBody Manager manager) {
         return new ResponseEntity<>(managerService.addManager(manager), HttpStatus.CREATED);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<List<Manager>> getAllManagers() {
         return ResponseEntity.ok(managerService.getAllManagers());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Manager> getManagerById(@PathVariable Long id) {
         return ResponseEntity.ok(managerService.getManagerById(id));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Manager> updateManager(@PathVariable Long id,
                                                  @Valid @RequestBody Manager manager) {
         return ResponseEntity.ok(managerService.updateManager(id, manager));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<String> deleteManager(@PathVariable Long id) {
 
         managerService.deleteManager(id);

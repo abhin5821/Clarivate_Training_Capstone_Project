@@ -4,6 +4,7 @@ import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -20,21 +21,25 @@ public class ReservationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER', 'CUSTOMER')")
     public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) {
         return new ResponseEntity<>(reservationService.createReservation(reservation), HttpStatus.CREATED);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER')")
     public ResponseEntity<List<Reservation>> getAllReservations() {
         return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER', 'CUSTOMER')")
     public ResponseEntity<Reservation> getReservationById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.getReservationById(id));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER', 'CUSTOMER')")
     public ResponseEntity<String> cancelReservation(@PathVariable Long id) {
         reservationService.cancelReservation(id);
         return ResponseEntity.ok("Reservation cancelled and record retained for audit.");

@@ -4,6 +4,7 @@ import org.capstonegrp8.restaurant_management_system.entity.OrderItem;
 import org.capstonegrp8.restaurant_management_system.service.OrderItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -20,6 +21,7 @@ public class OrderItemController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER')")
     public ResponseEntity<OrderItem> create(@Valid @RequestBody OrderItem orderItem) {
         return new ResponseEntity<>(
                 orderItemService.createOrderItem(orderItem),
@@ -27,16 +29,19 @@ public class OrderItemController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER')")
     public ResponseEntity<List<OrderItem>> getAll() {
         return ResponseEntity.ok(orderItemService.getAllOrderItems());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER', 'CUSTOMER')")
     public ResponseEntity<OrderItem> getById(@PathVariable Long id) {
         return ResponseEntity.ok(orderItemService.getOrderItemById(id));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER')")
     public ResponseEntity<OrderItem> update(@PathVariable Long id,
                                             @Valid @RequestBody OrderItem orderItem) {
 
@@ -45,6 +50,7 @@ public class OrderItemController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER','WAITER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
 
         orderItemService.deleteOrderItem(id);
