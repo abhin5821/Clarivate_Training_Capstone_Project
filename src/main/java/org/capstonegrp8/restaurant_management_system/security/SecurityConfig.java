@@ -65,8 +65,6 @@ public class SecurityConfig {
 
                         .requestMatchers("/auth/**").permitAll()
 
-                        // Registration
-                        .requestMatchers(HttpMethod.POST, "/customers").permitAll()
 
                         // Manager only
                         .requestMatchers("/managers/**").hasRole("MANAGER")
@@ -84,8 +82,8 @@ public class SecurityConfig {
                         .hasRole("MANAGER")
 
                         // Waiter + Manager
-                        .requestMatchers("/tables/**")
-                        .hasAnyRole("WAITER", "MANAGER")
+                        .requestMatchers("/tables/**").authenticated()
+//                        .hasAnyRole("WAITER", "MANAGER")
 
                         .requestMatchers("/waiters/**")
                         .hasAnyRole("WAITER", "MANAGER")

@@ -2,11 +2,14 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 import org.capstonegrp8.restaurant_management_system.entity.MenuItem;
 import org.capstonegrp8.restaurant_management_system.entity.OrderItem;
+import org.capstonegrp8.restaurant_management_system.entity.Payment;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantOrder;
+import org.capstonegrp8.restaurant_management_system.enums.OrderStatus;
 import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
 import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.MenuItemRepository;
 import org.capstonegrp8.restaurant_management_system.repository.OrderItemRepository;
+import org.capstonegrp8.restaurant_management_system.repository.PaymentRepository;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantOrderRepository;
 import org.capstonegrp8.restaurant_management_system.service.OrderItemService;
 import org.springframework.stereotype.Service;
@@ -19,13 +22,36 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final RestaurantOrderRepository orderRepository;
     private final MenuItemRepository menuItemRepository;
+    private final PaymentRepository paymentRepository;
 
     public OrderItemServiceImpl(OrderItemRepository orderItemRepository,
                                 RestaurantOrderRepository orderRepository,
-                                MenuItemRepository menuItemRepository) {
+                                MenuItemRepository menuItemRepository,
+                                PaymentRepository paymentRepository) {
         this.orderItemRepository = orderItemRepository;
         this.orderRepository = orderRepository;
         this.menuItemRepository = menuItemRepository;
+        this.paymentRepository = paymentRepository;
+    }
+
+    /**
+     * Keeps the order's linked payment amount mirrored to the order's
+     * totalAmount. Every order has a payment auto-created alongside it
+     * (see RestaurantOrderServiceImpl.createOrder), but older/seeded orders
+     * may not — guarded defensively.
+     */
+    private void syncPaymentAmount(RestaurantOrder order) {
+        Payment payment = order.getPayment();
+        if (payment != null) {
+            payment.setAmount(order.getTotalAmount());
+            paymentRepository.save(payment);
+        }
+    }
+
+    private void assertModifiable(RestaurantOrder order) {
+        if (order.getStatus() == OrderStatus.COMPLETED) {
+            throw new BadRequestException("Cannot modify items on an order that is already completed");
+        }
     }
 
     @Override
@@ -39,6 +65,8 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         RestaurantOrder order = orderRepository.findById(orderItem.getRestaurantOrder().getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderItem.getRestaurantOrder().getOrderId()));
+
+        assertModifiable(order);
 
         MenuItem menuItem = menuItemRepository.findById(orderItem.getMenuItem().getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + orderItem.getMenuItem().getItemId()));
@@ -58,6 +86,7 @@ public class OrderItemServiceImpl implements OrderItemService {
         double total = order.getTotalAmount() == null ? 0 : order.getTotalAmount();
         order.setTotalAmount(total + subTotal);
         orderRepository.save(order);
+        syncPaymentAmount(order);
 
         return savedItem;
     }
@@ -78,6 +107,8 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem existing = getOrderItemById(id);
         RestaurantOrder order = existing.getRestaurantOrder();
 
+        assertModifiable(order);
+
         double total = order.getTotalAmount() == null ? 0 : order.getTotalAmount();
         total -= existing.getSubTotal();
 
@@ -87,6 +118,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         order.setTotalAmount(total + newSubTotal);
         orderRepository.save(order);
+        syncPaymentAmount(order);
 
         return orderItemRepository.save(existing);
     }
@@ -96,9 +128,12 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem item = getOrderItemById(id);
         RestaurantOrder order = item.getRestaurantOrder();
 
+        assertModifiable(order);
+
         double total = order.getTotalAmount() == null ? 0 : order.getTotalAmount();
         order.setTotalAmount(total - item.getSubTotal());
         orderRepository.save(order);
+        syncPaymentAmount(order);
 
         orderItemRepository.delete(item);
     }

@@ -1,6 +1,7 @@
 package org.capstonegrp8.restaurant_management_system.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -43,5 +44,6 @@ public class Manager {
     private List<MenuItem> menuItems = new ArrayList<>();
 
     @NotBlank(message = "Password is required")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 }

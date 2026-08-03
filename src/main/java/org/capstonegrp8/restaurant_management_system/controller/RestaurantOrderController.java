@@ -34,9 +34,12 @@ public class RestaurantOrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
+    // No @Valid here: updating an order is now a status-only transition
+    // (IN_PROGRESS -> COMPLETED), so reservation/waiter are not expected
+    // in the request body.
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantOrder> updateOrder(@PathVariable Long id,
-                                                       @Valid @RequestBody RestaurantOrder order) {
+                                                       @RequestBody RestaurantOrder order) {
         return ResponseEntity.ok(orderService.updateOrder(id, order));
     }
 

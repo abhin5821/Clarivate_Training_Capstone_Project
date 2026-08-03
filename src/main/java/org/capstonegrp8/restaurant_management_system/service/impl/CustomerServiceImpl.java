@@ -5,7 +5,6 @@ import org.capstonegrp8.restaurant_management_system.entity.Customer;
 import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
 import org.capstonegrp8.restaurant_management_system.repository.CustomerRepository;
 import org.capstonegrp8.restaurant_management_system.service.CustomerService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,17 +13,31 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
+    public CustomerServiceImpl(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Customer addCustomer(Customer customer) {
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         return customerRepository.save(customer);
+    }
+
+    @Override
+    public Customer findOrCreateByPhone(String phone, String name, String city) {
+        return customerRepository.findByPhone(phone)
+                .map(existing -> {
+                    existing.setName(name);
+                    existing.setCity(city);
+                    return customerRepository.save(existing);
+                })
+                .orElseGet(() -> customerRepository.save(
+                        Customer.builder()
+                                .phone(phone)
+                                .name(name)
+                                .city(city)
+                                .build()
+                ));
     }
 
     @Override
@@ -44,6 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
         existing.setName(customer.getName());
         existing.setEmail(customer.getEmail());
         existing.setPhone(customer.getPhone());
+        existing.setCity(customer.getCity());
         return customerRepository.save(existing);
     }
 

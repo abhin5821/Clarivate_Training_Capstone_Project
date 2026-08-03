@@ -26,18 +26,16 @@ public class Customer {
     @Column(nullable = false)
     private String name;
 
-    @Email(message = "Invalid email")
-    @Column(nullable = false, unique = true)
-    private String email;
-
     @NotBlank(message = "Phone number is required")
     @Column(nullable = false, unique = true)
     private String phone;
 
+    private String city;
+
+    @Email(message = "Invalid email")
+    private String email;
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Reservation> reservations = new ArrayList<>();
-
-    @NotBlank(message = "Password is required")
-    private String password;
 }

@@ -24,11 +24,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final CustomerRepository customerRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email)
+    public UserDetails loadUserByUsername(String identifier)
             throws UsernameNotFoundException {
 
         Optional<Manager> manager =
-                managerRepository.findByEmail(email);
+                managerRepository.findByEmail(identifier);
 
         if (manager.isPresent()) {
             return User.builder()
@@ -39,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         Optional<Waiter> waiter =
-                waiterRepository.findByEmail(email);
+                waiterRepository.findByEmail(identifier);
 
         if (waiter.isPresent()) {
             return User.builder()
@@ -50,12 +50,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         Optional<Customer> customer =
-                customerRepository.findByEmail(email);
+                customerRepository.findByPhone(identifier);
 
         if (customer.isPresent()) {
             return User.builder()
-                    .username(customer.get().getEmail())
-                    .password(customer.get().getPassword())
+                    .username(customer.get().getPhone())
+                    .password("NOPASSWORD")
                     .roles("CUSTOMER")
                     .build();
         }

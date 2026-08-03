@@ -2,16 +2,20 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantOrder;
+import org.capstonegrp8.restaurant_management_system.entity.Payment;
 import org.capstonegrp8.restaurant_management_system.entity.Waiter;
 import org.capstonegrp8.restaurant_management_system.enums.OrderStatus;
+import org.capstonegrp8.restaurant_management_system.enums.PaymentStatus;
 import org.capstonegrp8.restaurant_management_system.enums.ReservationStatus;
 import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
 import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
+import org.capstonegrp8.restaurant_management_system.repository.PaymentRepository;
 import org.capstonegrp8.restaurant_management_system.repository.ReservationRepository;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantOrderRepository;
 import org.capstonegrp8.restaurant_management_system.repository.WaiterRepository;
 import org.capstonegrp8.restaurant_management_system.service.RestaurantOrderService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,16 +26,20 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     private final RestaurantOrderRepository orderRepository;
     private final ReservationRepository reservationRepository;
     private final WaiterRepository waiterRepository;
+    private final PaymentRepository paymentRepository;
 
     public RestaurantOrderServiceImpl(RestaurantOrderRepository orderRepository,
                                       ReservationRepository reservationRepository,
-                                      WaiterRepository waiterRepository) {
+                                      WaiterRepository waiterRepository,
+                                      PaymentRepository paymentRepository) {
         this.orderRepository = orderRepository;
         this.reservationRepository = reservationRepository;
         this.waiterRepository = waiterRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @Override
+    @Transactional
     public RestaurantOrder createOrder(RestaurantOrder order) {
         if (order.getReservation() == null || order.getReservation().getReservationId() == null) {
             throw new BadRequestException("Reservation reference is required");
@@ -56,12 +64,24 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
         order.setReservation(reservation);
         order.setWaiter(waiter);
         order.setOrderTime(LocalDateTime.now());
+        order.setStatus(OrderStatus.IN_PROGRESS);
+        order.setTotalAmount(0.0);
 
-        if (order.getStatus() == null) {
-            order.setStatus(OrderStatus.PENDING);
-        }
+        RestaurantOrder savedOrder = orderRepository.save(order);
 
-        return orderRepository.save(order);
+        // Auto-create the linked payment as PENDING the moment the order
+        // opens. Its amount is kept in sync with the order's totalAmount by
+        // OrderItemServiceImpl as items are added/updated/removed. paymentMethod
+        // stays unset until the waiter finalizes it once the order is COMPLETED.
+        Payment payment = Payment.builder()
+                .amount(0.0)
+                .status(PaymentStatus.PENDING)
+                .restaurantOrder(savedOrder)
+                .build();
+        Payment savedPayment = paymentRepository.save(payment);
+
+        savedOrder.setPayment(savedPayment);
+        return orderRepository.save(savedOrder);
     }
 
     @Override
@@ -78,8 +98,17 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     @Override
     public RestaurantOrder updateOrder(Long id, RestaurantOrder order) {
         RestaurantOrder existing = getOrderById(id);
-        existing.setStatus(order.getStatus());
-        existing.setTotalAmount(order.getTotalAmount());
+
+        // totalAmount is system-computed from order items — never accepted
+        // from the client, so the payment/order amounts can't drift apart.
+        if (order.getStatus() != null) {
+            if (existing.getStatus() == OrderStatus.COMPLETED
+                    && order.getStatus() == OrderStatus.IN_PROGRESS) {
+                throw new BadRequestException("A completed order cannot be reverted to in-progress");
+            }
+            existing.setStatus(order.getStatus());
+        }
+
         return orderRepository.save(existing);
     }
 

@@ -4,6 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -67,6 +68,12 @@ public class GlobalExceptionHandler {
     // ── 401 Unauthorized (user not found during login) ────────────────────────
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUsernameNotFound(UsernameNotFoundException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+    }
+
+    // ── 401 Unauthorized (wrong password during login) ────────────────────────
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 
