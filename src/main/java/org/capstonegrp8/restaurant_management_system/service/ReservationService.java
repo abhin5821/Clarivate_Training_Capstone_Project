@@ -18,4 +18,8 @@ public interface ReservationService {
 
     // Called when a waiter frees a table — re-allocates it to the best-fit waiting reservation
     void reallocateFreedTable(Long tableId);
+
+    // Called when a waiter releases a table — marks the reservation that was
+    // seated there as FINISHED (its dining cycle is over)
+    void finishReservationForTable(Long tableId);
 }

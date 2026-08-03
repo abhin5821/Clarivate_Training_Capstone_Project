@@ -265,7 +265,7 @@ it in the normal flow; use `PUT /payments/{id}` after the order is completed.
 
 | Enum | Values |
 |---|---|
-| `ReservationStatus` | `PENDING`, `CONFIRMED`, `CANCELLED` |
+| `ReservationStatus` | `PENDING`, `CONFIRMED`, `CANCELLED`, `FINISHED` |
 | `TableStatus` | `AVAILABLE`, `RESERVED`, `OCCUPIED` |
 | `OrderStatus` | `IN_PROGRESS`, `COMPLETED` (2 states only — one-way transition) |
 | `PaymentStatus` | `PENDING`, `PAID`, `FAILED` |
@@ -287,10 +287,13 @@ it in the normal flow; use `PUT /payments/{id}` after the order is completed.
 4. `PUT /payments/{id}` with `{ "paymentMethod": "...", "status": "PAID" }` —
    the single action that finalizes/collects the payment. `amount` is already
    correct (mirrors `order.totalAmount`) — don't send it.
-5. Optional: `GET /payments/{id}` or `GET /orders/{id}` to confirm.
+5. `PUT /tables/{id}/release` — waiter frees the table (→ `AVAILABLE`), which
+   also marks the reservation `FINISHED` (its dining cycle is over) and
+   triggers re-allocation of any waiting `PENDING` reservation.
+6. Optional: `GET /payments/{id}` or `GET /orders/{id}` to confirm.
 
 Minimal frontend function set: `createOrder`, `addOrderItem` (×N),
-`updateOrderStatus('COMPLETED')`, `finalizePayment`.
+`updateOrderStatus('COMPLETED')`, `finalizePayment`, `releaseTable`.
 
 ---
 

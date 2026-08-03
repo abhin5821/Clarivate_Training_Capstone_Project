@@ -79,7 +79,7 @@ public class SecurityConfig {
                         .hasRole("MANAGER")
 
                         .requestMatchers("/customers/**")
-                        .hasRole("MANAGER")
+                        .hasAnyRole("MANAGER", "WAITER")
 
                         // Waiter + Manager
                         .requestMatchers("/tables/**").authenticated()

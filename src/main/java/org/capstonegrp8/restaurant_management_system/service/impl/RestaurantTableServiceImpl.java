@@ -31,6 +31,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         }
         if (table.getStatus() == null) {
             table.setStatus(TableStatus.AVAILABLE);
+            reservationService.reallocateFreedTable(table.getTableId());
         }
         return tableRepository.save(table);
     }
@@ -59,7 +60,11 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     @Override
     @Transactional
     public RestaurantTable releaseTable(Long id) {
+
         RestaurantTable table = getTableById(id);
+        // Close out the reservation that was seated here before freeing the
+        // table, so it stops showing up as an active CONFIRMED reservation.
+        reservationService.finishReservationForTable(id);
         table.setStatus(TableStatus.AVAILABLE);
         RestaurantTable saved = tableRepository.save(table);
         reservationService.reallocateFreedTable(saved.getTableId());

@@ -259,6 +259,7 @@ All request and response bodies are **JSON**.
 | `GET`    | `/tables`        | Get all tables          | —             | `200` List     |
 | `GET`    | `/tables/{id}`   | Get table by ID         | —             | `200` Table    |
 | `PUT`    | `/tables/{id}`   | Update a table          | Table JSON    | `200` Table    |
+| `PUT`    | `/tables/{id}/release` | Release table after payment (→ AVAILABLE) | — | `200` Table |
 | `DELETE` | `/tables/{id}`   | Delete a table          | —             | `200` message  |
 
 **Table JSON:**
@@ -408,6 +409,7 @@ All request and response bodies are **JSON**.
 | `PENDING`   | Awaiting confirmation     |
 | `CONFIRMED` | Reservation confirmed     |
 | `CANCELLED` | Reservation cancelled     |
+| `FINISHED`  | Dining cycle over — table released after seated party's order was completed/paid |
 
 ### `OrderStatus`
 | Value       | Description          |

@@ -130,13 +130,13 @@ public class ReservationServiceImpl implements ReservationService {
             throw new BadRequestException("Reservation time cannot be in the past");
         }
 
-        // validate operating hours
-        int hour = reservationDate.getHour();
-        if (hour < openingHour || hour >= closingHour) {
-            throw new BadRequestException(
-                    "Reservation time must be within operating hours ("
-                            + openingHour + ":00 - " + closingHour + ":00)");
-        }
+//        // validate operating hours
+//        int hour = reservationDate.getHour();
+//        if (hour < openingHour || hour >= closingHour) {
+//            throw new BadRequestException(
+//                    "Reservation time must be within operating hours ("
+//                            + openingHour + ":00 - " + closingHour + ":00)");
+//        }
 
         // check maximum supported capacity
         Integer maxCapacity = tableRepository.findMaxCapacity();
@@ -190,5 +190,18 @@ public class ReservationServiceImpl implements ReservationService {
         RestaurantTable table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Table not found with id: " + tableId));
         tryAllocateFreedTable(table);
+    }
+
+    @Override
+    @Transactional
+    public void finishReservationForTable(Long tableId) {
+        List<Reservation> confirmedReservations =
+                reservationRepository.findByRestaurantTable_TableIdAndStatus(tableId, ReservationStatus.CONFIRMED);
+
+        confirmedReservations.forEach(reservation -> {
+            reservation.setStatus(ReservationStatus.FINISHED);
+        });
+
+        reservationRepository.saveAll(confirmedReservations);
     }
 }
