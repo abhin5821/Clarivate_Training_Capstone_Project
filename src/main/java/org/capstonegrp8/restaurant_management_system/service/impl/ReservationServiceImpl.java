@@ -2,6 +2,9 @@ package org.capstonegrp8.restaurant_management_system.service.impl;
 
 
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.capstonegrp8.restaurant_management_system.entity.Customer;
 import org.capstonegrp8.restaurant_management_system.entity.Reservation;
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantTable;
@@ -17,9 +20,6 @@ import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -55,6 +55,12 @@ public class ReservationServiceImpl implements ReservationService {
 
         tryAllocate(saved);
         return saved;
+    }
+
+    @Override
+    public Reservation getReservationById(Long id) {
+        return reservationRepository.findByReservationId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
     }
 
     /**
@@ -162,15 +168,26 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Reservation getReservationById(Long id) {
-        return reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
+    public List<Reservation> getReservationsByCustomerId(Long customerId) {
+
+        List<Reservation> reservations =
+                reservationRepository.findByCustomer_CustomerId(customerId);
+
+        if (reservations.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No reservations found for customer id: " + customerId);
+        }
+
+        return reservations;
     }
+
+
 
     @Override
     @Transactional
     public void cancelReservation(Long id) {
-        Reservation reservation = getReservationById(id);
+        Reservation reservation = reservationRepository.findByReservationId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
 
         RestaurantTable table = reservation.getRestaurantTable();
         if (table != null) {
@@ -191,6 +208,8 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Table not found with id: " + tableId));
         tryAllocateFreedTable(table);
     }
+
+
 
     @Override
     @Transactional

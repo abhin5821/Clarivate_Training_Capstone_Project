@@ -49,7 +49,7 @@ public class RestaurantOrderController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER','WAITER')")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
 
         orderService.deleteOrder(id);

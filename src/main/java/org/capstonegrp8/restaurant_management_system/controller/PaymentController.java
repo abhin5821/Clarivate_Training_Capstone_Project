@@ -49,7 +49,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER' ,'WAITER')")
     public ResponseEntity<String> deletePayment(@PathVariable Long id) {
 
         paymentService.deletePayment(id);

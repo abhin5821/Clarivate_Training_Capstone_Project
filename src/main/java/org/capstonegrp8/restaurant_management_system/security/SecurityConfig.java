@@ -80,7 +80,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/menu-items/**")
                         .hasRole("MANAGER")
 
-                        .requestMatchers(HttpMethod.PUT, "/menu-items/**")
+                        .requestMatchers(HttpMethod.PUT,  "/menu-items/**")
                         .hasRole("MANAGER")
 
                         .requestMatchers(HttpMethod.DELETE, "/menu-items/**")
@@ -90,8 +90,8 @@ public class SecurityConfig {
                         .hasAnyRole("MANAGER", "WAITER")
 
                         // Waiter + Manager
-                        .requestMatchers("/tables/**").authenticated()
-//                        .hasAnyRole("WAITER", "MANAGER")
+                        .requestMatchers("/tables/**")
+                        .hasAnyRole("WAITER", "MANAGER")
 
                         .requestMatchers("/waiters/**")
                         .hasAnyRole("WAITER", "MANAGER")
