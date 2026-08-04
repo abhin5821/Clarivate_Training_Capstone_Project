@@ -49,6 +49,10 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Override
     public RestaurantTable updateTable(Long id, RestaurantTable table) {
+        if (table.getStatus() != TableStatus.AVAILABLE) {
+            throw new BadRequestException("Only available tables can be updated");
+        }
+
         RestaurantTable existing = getTableById(id);
         existing.setTableNumber(table.getTableNumber());
         existing.setCapacity(table.getCapacity());
@@ -73,6 +77,11 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Override
     public void deleteTable(Long id) {
+        RestaurantTable table = getTableById(id);
+        if (table.getStatus() != TableStatus.AVAILABLE) {
+            throw new BadRequestException("Only available tables can be deleted");
+        }
+
         tableRepository.delete(getTableById(id));
     }
 }

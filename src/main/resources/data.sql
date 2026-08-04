@@ -80,10 +80,27 @@ VALUES (1, 'Priya verma', '9999999999', 'Mumbai', 'priyaverma@gmail.com');
 -- 4. Restaurant Table (waiter unassigned in source DB)
 INSERT IGNORE INTO restaurant_tables (table_id, table_number, capacity, status, waiter_id)
 VALUES (1, 2, 6, 'RESERVED', NULL);
+INSERT IGNORE INTO restaurant_tables (table_id, table_number, capacity, status, waiter_id)
+VALUES (2, 3, 4, 'AVAILABLE', NULL);
+INSERT IGNORE INTO restaurant_tables (table_id, table_number, capacity, status, waiter_id)
+VALUES (3, 4, 5, 'AVAILABLE', NULL);
+
 
 -- 5. Menu Item (manager unassigned in source DB)
-INSERT IGNORE INTO menu_items (item_id, name, category, price, available, manager_id)
-VALUES (1, 'Mutton Dum Biryani', 'MAIN_COURSE', 300.0, 1, NULL);
+INSERT IGNORE INTO menu_items
+(item_id, name, category, price, available, manager_id)
+VALUES
+(2, 'Gyoza', 'STARTER', 330.0, 1, NULL),
+(3, 'Dumplings', 'STARTER', 320.0, 1, NULL),
+(4, 'Pad Thai', 'MAIN_COURSE', 525.0, 1, NULL),
+(5, 'Honey Garlic Sriracha Skillet Chicken', 'MAIN_COURSE', 700.0, 1, NULL),
+(6, 'Soba Noodles', 'MAIN_COURSE', 570.0, 1, NULL),
+(7, 'Pina Colada', 'BEVERAGE', 370.0, 1, NULL),
+(8, 'Espresso Martini', 'BEVERAGE', 430.0, 1, NULL),
+(9, 'Cinnamon Roll', 'DESSERT', 370.0, 1, NULL),
+(10, 'Japanese Cheesecake', 'DESSERT', 470.0, 1, NULL),
+(11, 'Matcha Mint Brownie Ice Cream', 'DESSERT', 545.0, 1, NULL);
+
 
 -- 6. Reservation (references customer_id = 1, table_id = 1)
 INSERT IGNORE INTO reservations
