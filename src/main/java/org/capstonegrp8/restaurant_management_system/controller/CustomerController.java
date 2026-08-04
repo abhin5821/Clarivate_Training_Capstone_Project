@@ -21,7 +21,7 @@ public class CustomerController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Customer> addCustomer(@Valid @RequestBody Customer customer) {
         return new ResponseEntity<>(customerService.addCustomer(customer), HttpStatus.CREATED);
     }
@@ -46,7 +46,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'CUSTOMER)")
     public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
 
         customerService.deleteCustomer(id);

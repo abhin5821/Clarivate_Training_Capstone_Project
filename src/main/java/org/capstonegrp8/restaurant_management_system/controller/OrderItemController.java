@@ -29,7 +29,7 @@ public class OrderItemController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'WAITER' , 'CUSTOMER')")
     public ResponseEntity<List<OrderItem>> getAll() {
         return ResponseEntity.ok(orderItemService.getAllOrderItems());
     }
