@@ -61,6 +61,12 @@ public class SecurityConfig {
                             response.setContentType("application/json");
                             response.getWriter().write(
                                 "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required. Please provide a valid token.\"}");
+                       })
+                       .accessDeniedHandler((request, response, accessDeniedException) -> {
+                           response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                           response.setContentType("application/json");
+                           response.getWriter().write(
+                               "{\"status\":403,\"error\":\"Forbidden\",\"message\":\"You are not authorised to access this feature or resource.\"}");
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
