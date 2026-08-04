@@ -1,9 +1,12 @@
 package org.capstonegrp8.restaurant_management_system.service.impl;
 
 import org.capstonegrp8.restaurant_management_system.entity.RestaurantTable;
+import org.capstonegrp8.restaurant_management_system.enums.PaymentStatus;
 import org.capstonegrp8.restaurant_management_system.enums.TableStatus;
 import org.capstonegrp8.restaurant_management_system.exception.BadRequestException;
+import org.capstonegrp8.restaurant_management_system.exception.ConflictException;
 import org.capstonegrp8.restaurant_management_system.exception.ResourceNotFoundException;
+import org.capstonegrp8.restaurant_management_system.repository.PaymentRepository;
 import org.capstonegrp8.restaurant_management_system.repository.RestaurantTableRepository;
 import org.capstonegrp8.restaurant_management_system.service.ReservationService;
 import org.capstonegrp8.restaurant_management_system.service.RestaurantTableService;
@@ -17,11 +20,14 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     private final RestaurantTableRepository tableRepository;
     private final ReservationService reservationService;
+    private final PaymentRepository paymentRepository;
 
     public RestaurantTableServiceImpl(RestaurantTableRepository tableRepository,
-                                      ReservationService reservationService) {
+                                      ReservationService reservationService,
+                                      PaymentRepository paymentRepository) {
         this.tableRepository = tableRepository;
         this.reservationService = reservationService;
+        this.paymentRepository = paymentRepository;
     }
 
     @Override
@@ -62,6 +68,11 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     public RestaurantTable releaseTable(Long id) {
 
         RestaurantTable table = getTableById(id);
+        boolean hasIncompletePayment = paymentRepository
+                .existsByRestaurantOrder_Reservation_RestaurantTable_TableIdAndStatusNot(id, PaymentStatus.PAID);
+        if (hasIncompletePayment) {
+            throw new ConflictException("Table cannot be released until all linked payments are completed");
+        }
         // Close out the reservation that was seated here before freeing the
         // table, so it stops showing up as an active CONFIRMED reservation.
         reservationService.finishReservationForTable(id);
